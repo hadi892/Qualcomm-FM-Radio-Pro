@@ -1,0 +1,108 @@
+# ==============================================================================
+# QUALCOMM FM RADIO PRO - SYSTEM & ARCHITECTURE SPECIFICATION (YML)
+# Target Platform: Android 14+ (API 34/35) | Tablet Profile: SM-X216B
+# SoC Platform: Qualcomm Snapdragon 695 5G (SM6375)
+# ==============================================================================
+
+project:
+  name: "Qualcomm FM Radio Pro"
+  application_id: "com.aistudio.fmradiotuner.qkvrzp"
+  version_code: 1
+  version_name: "1.0.0-PRO"
+  target_device:
+    vendor: "Samsung / Qualcomm Reference Design"
+    model: "SM-X216B (Galaxy Tab A9+ 5G)"
+    soc: "Qualcomm Snapdragon 695 5G (SM6375)"
+    rf_chipset: "WCN3990 / QCA6390 Integrated FM/Bluetooth Receiver"
+    form_factor: "Tablet (Landscape & Portrait Adaptive)"
+
+architecture:
+  pattern: "MVVM (Model-View-ViewModel) + Clean Architecture Repository"
+  ui_framework: "Jetpack Compose (Material Design 3 Slate & Cyber Palette)"
+  concurrency: "Kotlin Coroutines & Flow (Reactive Hardware Event Loop)"
+  data_persistence: "Android Room Database (Local SQLite with KSP)"
+
+modes:
+  mode_1_operational_tuner:
+    description: "Full interactive FM broadcast tuner with real-time spectrum seek, RDS decoding, and audio recording."
+    prerequisites:
+      - "System/Privileged permissions (android.permission.ACCESS_FM_RADIO)"
+      - "Hardware V4L2 device node access (/dev/radio0)"
+      - "Wired headset 3.5mm or USB-C analog antenna connected"
+    capabilities:
+      - "Precise step tuning (0.05 MHz, 0.1 MHz, 0.2 MHz)"
+      - "Automatic hardware SNR/RSSI threshold seek"
+      - "RDS/RBDS PI, PS (Program Service), RT (Radio Text), and PTY decoding"
+      - "Real-time PCM/V4L2 audio capture to local Room history"
+
+  mode_2_engineering_diagnostics:
+    description: "RF telemetry audit, vendor IPC introspection, and privileged simulation sandbox fallback."
+    prerequisites: "Available on standard retail unprivileged Android sandbox via simulated reflection override."
+    diagnostics:
+      - component: "V4L2 FM Kernel Driver"
+        device_node: "/dev/radio0"
+        status_check: "ioctl VIDIOC_QUERYCAP"
+      - component: "Android Vendor HAL"
+        service: "android.hardware.broadcastradio@2.0-service"
+        status_check: "HIDL / AIDL Service Manager Lookup"
+      - component: "Audio Routing Engine"
+        subsystem: "AudioSystem.FORCE_ANALOG_DOCK / FORCE_SPEAKER"
+      - component: "Privilege Simulation Mode"
+        feature: "Developer bypass toggle for non-system evaluation"
+
+frequency_regions:
+  - id: "US_AMERICAS"
+    label: "Americas (Standard CCIR)"
+    min_freq_mhz: 87.5
+    max_freq_mhz: 107.9
+    step_mhz: 0.2
+    deemphasis_us: 75
+
+  - id: "EUROPE"
+    label: "Europe & Africa (Standard CCIR)"
+    min_freq_mhz: 87.5
+    max_freq_mhz: 108.0
+    step_mhz: 0.1
+    deemphasis_us: 50
+
+  - id: "JAPAN"
+    label: "Japan Wideband (JIDF)"
+    min_freq_mhz: 76.0
+    max_freq_mhz: 95.0
+    step_mhz: 0.1
+    deemphasis_us: 50
+
+  - id: "AUSTRALIA"
+    label: "Australia & Oceania"
+    min_freq_mhz: 87.5
+    max_freq_mhz: 108.0
+    step_mhz: 0.1
+    deemphasis_us: 50
+
+audio_routing:
+  supported_routes:
+    - id: "WIRED_HEADSET"
+      display: "Wired Headset (RF Antenna Active)"
+      antenna_verified: true
+    - id: "INTERNAL_SPEAKER"
+      display: "Tablet Stereo Speakers (Forced Output)"
+      antenna_verified: false
+    - id: "BLUETOOTH"
+      display: "Bluetooth A2DP Sink"
+      antenna_verified: false
+    - id: "USB_AUDIO"
+      display: "USB-C Audio Adapter / DAC"
+      antenna_verified: true
+    - id: "DSP_INTERNAL"
+      display: "Direct SoC DSP Pass-through"
+      antenna_verified: true
+
+build_configuration:
+  gradle_dsl: "Kotlin DSL (.gradle.kts)"
+  compile_sdk: 35
+  target_sdk: 35
+  min_sdk: 26
+  jvm_target: "17"
+  testing:
+    unit_test_engine: "Robolectric 4.14 (Native Graphics Mode)"
+    screenshot_engine: "Roborazzi 1.39"

@@ -1,0 +1,6 @@
+{
+  "name": "Qualcomm FM Radio Pro",
+  "description": "Production-grade Qualcomm FM Radio Application with RF hardware diagnostics, Binder/HAL verification, and tablet-optimized tuner interface.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
