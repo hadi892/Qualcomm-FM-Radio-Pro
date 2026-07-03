@@ -31,6 +31,13 @@ android {
       keyAlias = "upload"
       keyPassword = System.getenv("KEY_PASSWORD")
     }
+    create("debug") {
+      // Use Android's default debug keystore or skip signing if not available
+      storeFile = file(System.getenv("DEBUG_KEYSTORE_PATH") ?: "${System.getProperty("user.home")}/.android/debug.keystore")
+      storePassword = "android"
+      keyAlias = "androiddebugkey"
+      keyPassword = "android"
+    }
   }
 
   buildTypes {
@@ -41,7 +48,8 @@ android {
       signingConfig = signingConfigs.getByName("release")
     }
     debug {
-      // Uses Android's default debug keystore (~/.android/debug.keystore)
+      // Use debug signing config, but make it optional
+      signingConfig = signingConfigs.getByName("debug")
     }
   }
   compileOptions {
