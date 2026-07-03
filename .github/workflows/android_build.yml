@@ -23,13 +23,23 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
+      - name: Grant Execute Permission for Gradle Wrapper
+        run: chmod +x gradlew || true
+
+      - name: Setup Gradle (if wrapper missing)
+        uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: '8.4.1'
+
       - name: Show Java & Gradle versions (debug)
         run: |
           java -version
-          ./gradlew --version
-
-      - name: Grant Execute Permission for Gradle Wrapper
-        run: chmod +x gradlew || true
+          if [ -x ./gradlew ]; then
+            ./gradlew --version
+          else
+            echo "No gradlew found, using system gradle"
+            gradle --version
+          fi
 
       - name: Install Android SDK command-line tools (minimal)
         run: |
@@ -46,10 +56,20 @@ jobs:
           sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-33" "build-tools;33.0.2" || true
 
       - name: Run JVM Unit & Robolectric Tests (with stacktrace)
-        run: ./gradlew :app:testDebugUnitTest --console=plain --stacktrace --info
+        run: |
+          if [ -x ./gradlew ]; then
+            ./gradlew :app:testDebugUnitTest --console=plain --stacktrace --info
+          else
+            gradle :app:testDebugUnitTest --console=plain --stacktrace --info
+          fi
 
       - name: Assemble Debug APK
-        run: ./gradlew :app:assembleDebug --console=plain --stacktrace --info
+        run: |
+          if [ -x ./gradlew ]; then
+            ./gradlew :app:assembleDebug --console=plain --stacktrace --info
+          else
+            gradle :app:assembleDebug --console=plain --stacktrace --info
+          fi
 
       - name: Upload Debug APK Artifact
         uses: actions/upload-artifact@v4
