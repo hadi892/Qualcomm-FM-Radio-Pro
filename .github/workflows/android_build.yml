@@ -53,17 +53,30 @@ jobs:
 
       - name: Install Android SDK command-line tools (minimal)
         run: |
+          set -euo pipefail
           sudo apt-get update -y
           sudo apt-get install -y unzip wget
-          mkdir -p $HOME/android-sdk/cmdline-tools
-          cd $HOME/android-sdk/cmdline-tools
-          wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline.zip
-          unzip -q cmdline.zip -d latest
-          mv latest $HOME/android-sdk/cmdline-tools/latest
-          export ANDROID_HOME=$HOME/android-sdk
-          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
-          yes | sdkmanager --licenses || true
-          sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-33" "build-tools;33.0.2" || true
+          export ANDROID_HOME="$HOME/android-sdk"
+          mkdir -p "$ANDROID_HOME/cmdline-tools"
+
+          TMP_ZIP="/tmp/commandlinetools.zip"
+          TMP_UNPACK="/tmp/cmdline-tools-unpack"
+
+          # Download and unpack to a temporary location to avoid moving a directory into itself
+          wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O "$TMP_ZIP"
+          rm -rf "$TMP_UNPACK"
+          mkdir -p "$TMP_UNPACK"
+          unzip -q "$TMP_ZIP" -d "$TMP_UNPACK"
+
+          # The zip extracts a top-level 'cmdline-tools' directory. Move it into the sdk path as 'latest'.
+          rm -rf "$ANDROID_HOME/cmdline-tools/latest"
+          mv "$TMP_UNPACK/cmdline-tools" "$ANDROID_HOME/cmdline-tools/latest"
+
+          export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH"
+
+          # Use the sdkmanager from the extracted tools directly to accept licenses and install packages.
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_HOME" "platform-tools" "platforms;android-33" "build-tools;33.0.2" || true
 
       - name: Run JVM Unit & Robolectric Tests (with stacktrace)
         run: |
