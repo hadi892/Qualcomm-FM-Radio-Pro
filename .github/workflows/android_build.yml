@@ -39,7 +39,7 @@ jobs:
         if: steps.check-wrapper.outputs.has_wrapper == 'false'
         uses: gradle/gradle-build-action@v2
         with:
-          gradle-version: '8.4'
+          gradle-version: '9.3.1'
 
       - name: Show Java & Gradle versions (debug)
         run: |
