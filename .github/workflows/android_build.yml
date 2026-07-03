@@ -26,7 +26,17 @@ jobs:
       - name: Grant Execute Permission for Gradle Wrapper
         run: chmod +x gradlew || true
 
-      - name: Setup Gradle (if wrapper missing)
+      - name: Check for Gradle wrapper
+        id: check-wrapper
+        run: |
+          if [ -f ./gradlew ]; then
+            echo "has_wrapper=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_wrapper=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup Gradle (only if wrapper missing)
+        if: steps.check-wrapper.outputs.has_wrapper == 'false'
         uses: gradle/gradle-build-action@v2
         with:
           gradle-version: '8.4.1'
